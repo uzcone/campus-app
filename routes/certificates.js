@@ -3,10 +3,10 @@ const router = express.Router();
 
 let certificates = [
   { id: 1, title: '정보처리기사', issuer: '한국산업인력공단', score: '최종 합격', issueDate: '2026-06-15' },
-  { id: 2, title: 'TOPIK', issuer: '국립국제교육원', score: '4급', issueDate: '2026-05-20' }
+  { id: 2, title: 'SQLD', issuer: '한국데이터산업진흥원', score: '합격', issueDate: '2026-09-10' }
 ];
 
-// 1. 전체 자격증 및 어학 성적 조회
+// 1. 전체 자격증 조회
 router.get('/', (req, res) => {
   res.json(certificates);
 });
