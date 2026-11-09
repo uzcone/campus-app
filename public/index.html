@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>슬기로운 대학생활 매니저</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f4f6f8; color: #333; padding: 30px 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    header { margin-bottom: 25px; text-align: center; }
+    header h1 { font-size: 26px; color: #1a1a2e; margin-bottom: 8px; }
+    header p { color: #666; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #eef2f5; padding-bottom: 8px; color: #162447; display: flex; justify-content: space-between; align-items: center; }
+    .badge { font-size: 11px; padding: 3px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; }
+    .form-group { display: flex; gap: 8px; margin-bottom: 15px; }
+    .form-group input { flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
+    button.btn-add { background: #1f2937; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    button.btn-add:hover { background: #374151; }
+    ul { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
+    li { background: #f9fafb; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .info strong { color: #111827; }
+    .info span { color: #6b7280; font-size: 12px; margin-left: 5px; }
+    button.btn-del { background: #fee2e2; color: #b91c1c; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    button.btn-del:hover { background: #fecaca; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎓 슬기로운 대학생활 통합 매니저</h1>
+      <p>학사 일정(수강 과목, 과제) 및 커리어 스펙(대외활동, 자격증) REST API 대시보드</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>수강 과목 관리 <span class="badge">/courses</span></h2>
+        <div class="form-group">
+          <input type="text" id="courseTitle" placeholder="과목명" />
+          <input type="text" id="courseProf" placeholder="교수명" />
+          <input type="number" id="courseCredits" placeholder="학점" style="max-width: 70px;" value="3" />
+          <button class="btn-add" onclick="addCourse()">등록</button>
+        </div>
+        <ul id="courseList"></ul>
+      </div>
+
+      <div class="card">
+        <h2>과제 및 시험 일정 <span class="badge">/assignments</span></h2>
+        <div class="form-group">
+          <input type="text" id="assignSubject" placeholder="과목명" />
+          <input type="text" id="assignTitle" placeholder="과제 내용" />
+          <input type="date" id="assignDate" />
+          <button class="btn-add" onclick="addAssignment()">등록</button>
+        </div>
+        <ul id="assignList"></ul>
+      </div>
+
+      <div class="card">
+        <h2>대외활동 & 동아리 <span class="badge">/activities</span></h2>
+        <div class="form-group">
+          <input type="text" id="actName" placeholder="활동/동아리명" />
+          <input type="text" id="actRole" placeholder="역할" />
+          <button class="btn-add" onclick="addActivity()">등록</button>
+        </div>
+        <ul id="actList"></ul>
+      </div>
+
+      <div class="card">
+        <h2>자격증 & 어학 성적 <span class="badge">/certificates</span></h2>
+        <div class="form-group">
+          <input type="text" id="certTitle" placeholder="자격증/어학명" />
+          <input type="text" id="certScore" placeholder="점수/급수" />
+          <input type="text" id="certIssuer" placeholder="발급기관" />
+          <button class="btn-add" onclick="addCertificate()">등록</button>
+        </div>
+        <ul id="certList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3000';
+
+    async function loadAll() {
+      const resCourses = await fetch(`${API}/courses`);
+      const courses = await resCourses.json();
+      document.getElementById('courseList').innerHTML = courses.map(c => `
+        <li>
+          <div class="info"><strong>${c.title}</strong><span>(${c.professor} / ${c.credits}학점)</span></div>
+          <button class="btn-del" onclick="deleteItem('courses', ${c.id})">삭제</button>
+        </li>
+      `).join('');
+
+      const resAssign = await fetch(`${API}/assignments`);
+      const assigns = await resAssign.json();
+      document.getElementById('assignList').innerHTML = assigns.map(a => `
+        <li>
+          <div class="info"><strong>[${a.courseTitle}]</strong> ${a.title}<span>(~${a.dueDate})</span></div>
+          <button class="btn-del" onclick="deleteItem('assignments', ${a.id})">삭제</button>
+        </li>
+      `).join('');
+
+      const resAct = await fetch(`${API}/activities`);
+      const acts = await resAct.json();
+      document.getElementById('actList').innerHTML = acts.map(a => `
+        <li>
+          <div class="info"><strong>${a.name}</strong><span>(${a.role})</span></div>
+          <button class="btn-del" onclick="deleteItem('activities', ${a.id})">삭제</button>
+        </li>
+      `).join('');
+
+      const resCert = await fetch(`${API}/certificates`);
+      const certs = await resCert.json();
+      document.getElementById('certList').innerHTML = certs.map(c => `
+        <li>
+          <div class="info"><strong>${c.title}</strong>: ${c.score}<span>(${c.issuer})</span></div>
+          <button class="btn-del" onclick="deleteItem('certificates', ${c.id})">삭제</button>
+        </li>
+      `).join('');
+    }
+
+    async function addCourse() {
+      const title = document.getElementById('courseTitle').value.trim();
+      const professor = document.getElementById('courseProf').value.trim();
+      const credits = document.getElementById('courseCredits').value;
+      if (!title) return alert('과목명을 입력하세요.');
+      await fetch(`${API}/courses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, professor, credits, semester: '2026-1' })
+      });
+      document.getElementById('courseTitle').value = '';
+      document.getElementById('courseProf').value = '';
+      loadAll();
+    }
+
+    async function addAssignment() {
+      const courseTitle = document.getElementById('assignSubject').value.trim();
+      const title = document.getElementById('assignTitle').value.trim();
+      const dueDate = document.getElementById('assignDate').value;
+      if (!title || !courseTitle || !dueDate) return alert('모든 항목을 입력하세요.');
+      await fetch(`${API}/assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseTitle, title, dueDate })
+      });
+      document.getElementById('assignSubject').value = '';
+      document.getElementById('assignTitle').value = '';
+      loadAll();
+    }
+
+    async function addActivity() {
+      const name = document.getElementById('actName').value.trim();
+      const role = document.getElementById('actRole').value.trim();
+      if (!name || !role) return alert('모든 항목을 입력하세요.');
+      await fetch(`${API}/activities`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, role, period: '진행 중' })
+      });
+      document.getElementById('actName').value = '';
+      document.getElementById('actRole').value = '';
+      loadAll();
+    }
+
+    async function addCertificate() {
+      const title = document.getElementById('certTitle').value.trim();
+      const score = document.getElementById('certScore').value.trim();
+      const issuer = document.getElementById('certIssuer').value.trim();
+      if (!title || !score) return alert('모든 항목을 입력하세요.');
+      await fetch(`${API}/certificates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, score, issuer })
+      });
+      document.getElementById('certTitle').value = '';
+      document.getElementById('certScore').value = '';
+      document.getElementById('certIssuer').value = '';
+      loadAll();
+    }
+
+    async function deleteItem(endpoint, id) {
+      if (!confirm('정말 삭제하시겠습니까?')) return;
+      await fetch(`${API}/${endpoint}/${id}`, { method: 'DELETE' });
+      loadAll();
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>
