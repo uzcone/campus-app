@@ -6,24 +6,31 @@
   <title>슬기로운 대학생활 매니저</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f4f6f8; color: #333; padding: 30px 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
+    body { background-color: #f4f6f8; color: #333; padding: 25px 15px; }
+    .container { max-width: 900px; margin: 0 auto; }
     header { margin-bottom: 25px; text-align: center; }
-    header h1 { font-size: 26px; color: #1a1a2e; margin-bottom: 8px; }
-    header p { color: #666; font-size: 14px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .card h2 { font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #eef2f5; padding-bottom: 8px; color: #162447; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; }
+    header p { color: #666; font-size: 13px; }
+    .grid { display: flex; flex-direction: column; gap: 20px; }
+    .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.04); }
+    .card h2 { font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #eef2f5; padding-bottom: 8px; color: #162447; display: flex; justify-content: space-between; align-items: center; }
     .badge { font-size: 11px; padding: 3px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; }
-    .form-group { display: flex; gap: 8px; margin-bottom: 15px; }
-    .form-group input { flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
-    button.btn-add { background: #1f2937; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    
+    /* Forma katakchalari va tugma tartibi */
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .input-row { display: flex; gap: 8px; }
+    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: #fafafa; }
+    .form-group input:focus { outline: none; border-color: #2563eb; background: #fff; }
+    
+    /* Ro'yxatdan o'tkazish tugmasi endi hamma kartada bir tekis pastda turadi */
+    button.btn-add { width: 100%; background: #1f2937; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
     button.btn-add:hover { background: #374151; }
+    
     ul { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
     li { background: #f9fafb; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
     .info strong { color: #111827; }
     .info span { color: #6b7280; font-size: 12px; margin-left: 5px; }
-    button.btn-del { background: #fee2e2; color: #b91c1c; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    button.btn-del { background: #fee2e2; color: #b91c1c; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
     button.btn-del:hover { background: #fecaca; }
   </style>
 </head>
@@ -35,43 +42,55 @@
     </header>
 
     <div class="grid">
+      <!-- 1. 수강 과목 관리 -->
       <div class="card">
         <h2>수강 과목 관리 <span class="badge">/courses</span></h2>
         <div class="form-group">
-          <input type="text" id="courseTitle" placeholder="과목명" />
-          <input type="text" id="courseProf" placeholder="교수명" />
-          <input type="number" id="courseCredits" placeholder="학점" style="max-width: 70px;" value="3" />
+          <div class="input-row">
+            <input type="text" id="courseTitle" placeholder="과목명" style="flex: 2;" />
+            <input type="text" id="courseProf" placeholder="교수명" style="flex: 1;" />
+            <input type="number" id="courseCredits" placeholder="학점" style="width: 70px;" value="3" />
+          </div>
           <button class="btn-add" onclick="addCourse()">등록</button>
         </div>
         <ul id="courseList"></ul>
       </div>
 
+      <!-- 2. 과제 및 시험 일정 -->
       <div class="card">
         <h2>과제 및 시험 일정 <span class="badge">/assignments</span></h2>
         <div class="form-group">
-          <input type="text" id="assignSubject" placeholder="과목명" />
-          <input type="text" id="assignTitle" placeholder="과제 내용" />
+          <div class="input-row">
+            <input type="text" id="assignSubject" placeholder="과목명" style="flex: 1;" />
+            <input type="text" id="assignTitle" placeholder="과제 내용" style="flex: 2;" />
+          </div>
           <input type="date" id="assignDate" />
           <button class="btn-add" onclick="addAssignment()">등록</button>
         </div>
         <ul id="assignList"></ul>
       </div>
 
+      <!-- 3. 대외활동 & 동아리 -->
       <div class="card">
         <h2>대외활동 & 동아리 <span class="badge">/activities</span></h2>
         <div class="form-group">
-          <input type="text" id="actName" placeholder="활동/동아리명" />
-          <input type="text" id="actRole" placeholder="역할" />
+          <div class="input-row">
+            <input type="text" id="actName" placeholder="활동/동아리명" style="flex: 1;" />
+            <input type="text" id="actRole" placeholder="역할" style="flex: 1;" />
+          </div>
           <button class="btn-add" onclick="addActivity()">등록</button>
         </div>
         <ul id="actList"></ul>
       </div>
 
+      <!-- 4. 자격증 & 어학 성적 -->
       <div class="card">
-        <h2>자격증 & 어학 성적 <span class="badge">/certificates</span></h2>
+        <h2>자격증 관리 <span class="badge">/certificates</span></h2>
         <div class="form-group">
-          <input type="text" id="certTitle" placeholder="자격증/어학명" />
-          <input type="text" id="certScore" placeholder="점수/급수" />
+          <div class="input-row">
+            <input type="text" id="certTitle" placeholder="자격증명" style="flex: 2;" />
+            <input type="text" id="certScore" placeholder="점수/급수" style="flex: 1;" />
+          </div>
           <input type="text" id="certIssuer" placeholder="발급기관" />
           <button class="btn-add" onclick="addCertificate()">등록</button>
         </div>
@@ -82,7 +101,6 @@
 
   <script>
     const API = '';
-;
 
     async function loadAll() {
       const resCourses = await fetch(`${API}/courses`);
