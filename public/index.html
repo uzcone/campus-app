@@ -3,141 +3,414 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>슬기로운 대학생활 매니저</title>
+  <title>슬기로운 대학생활 통합 매니저 - API & 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f4f6f8; color: #333; padding: 25px 15px; }
-    .container { max-width: 900px; margin: 0 auto; }
-    header { margin-bottom: 25px; text-align: center; }
-    header h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; }
-    header p { color: #666; font-size: 13px; }
-    .grid { display: flex; flex-direction: column; gap: 20px; }
-    .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.04); }
-    .card h2 { font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #eef2f5; padding-bottom: 8px; color: #162447; display: flex; justify-content: space-between; align-items: center; }
-    .badge { font-size: 11px; padding: 3px 8px; background: #e0f2fe; color: #0369a1; border-radius: 6px; }
-    
-    /* Forma katakchalari va tugma tartibi */
-    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-    .input-row { display: flex; gap: 8px; }
-    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: #fafafa; }
-    .form-group input:focus { outline: none; border-color: #2563eb; background: #fff; }
-    
-    /* Ro'yxatdan o'tkazish tugmasi endi hamma kartada bir tekis pastda turadi */
-    button.btn-add { width: 100%; background: #1f2937; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-    button.btn-add:hover { background: #374151; }
-    
-    ul { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
-    li { background: #f9fafb; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-    .info strong { color: #111827; }
-    .info span { color: #6b7280; font-size: 12px; margin-left: 5px; }
-    button.btn-del { background: #fee2e2; color: #b91c1c; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    button.btn-del:hover { background: #fecaca; }
+    :root {
+      --bg-dark: #141413;
+      --card-bg: #1e1e1c;
+      --node-root-bg: #3b3b37;
+      --node-root-border: #6e6e68;
+      --node-router-bg: #3b3486;
+      --node-router-active: #473fa0;
+      --node-router-border: #7e74eb;
+      --line-color: #464642;
+      --row-border: #2a2a27;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #e5e5e2;
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono-font {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* 루트 노드 */
+    .root-node {
+      background-color: var(--node-root-bg);
+      border: 1px solid var(--node-root-border);
+      border-radius: 12px;
+      color: #f0f0ed;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 보라색 라우터 카드 */
+    .router-card {
+      background-color: var(--node-router-bg);
+      border: 1.5px solid var(--node-router-border);
+      border-radius: 12px;
+      transition: all 0.18s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .router-card:hover {
+      background-color: var(--node-router-active);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(126, 116, 235, 0.25);
+    }
+
+    .router-card.active {
+      background-color: var(--node-router-active);
+      border-color: #a8a0ff;
+      box-shadow: 0 0 0 2px rgba(168, 160, 255, 0.3), 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    /* 트리 연결선 */
+    .tree-stem-root {
+      width: 1px;
+      height: 26px;
+      background-color: var(--line-color);
+      margin: 0 auto;
+    }
+
+    .tree-branch-item {
+      position: relative;
+      padding-top: 26px;
+    }
+
+    .tree-branch-item::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 26px;
+      background-color: var(--line-color);
+    }
+
+    .tree-branch-item::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      height: 1px;
+      background-color: var(--line-color);
+    }
+
+    .tree-branch-item:first-child::after {
+      left: 50%;
+      width: calc(50% + 8px);
+    }
+
+    .tree-branch-item:nth-child(2)::after,
+    .tree-branch-item:nth-child(3)::after {
+      left: -8px;
+      width: calc(100% + 16px);
+    }
+
+    .tree-branch-item:last-child::after {
+      right: 50%;
+      width: calc(50% + 8px);
+    }
+
+    /* HTTP 메서드 배지 */
+    .badge-method {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px;
+      padding: 3px 0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-GET { background-color: #0d254c; color: #58a6ff; }
+    .badge-POST { background-color: #0f3320; color: #4ade80; }
+    .badge-PUT { background-color: #3d260b; color: #fbbf24; }
+    .badge-DELETE { background-color: #3d1418; color: #f87171; }
+
+    /* 다크 인풋 스타일 */
+    .dark-input {
+      background-color: #141413;
+      border: 1px solid #383834;
+      color: #f0f0ed;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    .dark-input:focus {
+      outline: none;
+      border-color: #7e74eb;
+    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>🎓 슬기로운 대학생활 통합 매니저</h1>
-      <p>학사 일정(수강 과목, 과제) 및 커리어 스펙(대외활동, 자격증) REST API 대시보드</p>
-    </header>
+<body class="min-h-screen py-7 px-3 sm:px-6">
 
-    <div class="grid">
-      <!-- 1. 수강 과목 관리 -->
-      <div class="card">
-        <h2>수강 과목 관리 <span class="badge">/courses</span></h2>
-        <div class="form-group">
-          <div class="input-row">
-            <input type="text" id="courseTitle" placeholder="과목명" style="flex: 2;" />
-            <input type="text" id="courseProf" placeholder="교수명" style="flex: 1;" />
-            <input type="number" id="courseCredits" placeholder="학점" style="width: 70px;" value="3" />
-          </div>
-          <button class="btn-add" onclick="addCourse()">등록</button>
-        </div>
-        <ul id="courseList"></ul>
-      </div>
+  <main class="max-w-4xl mx-auto">
+    
+    <!-- 상단 팀 배지 -->
+    <div class="flex justify-center mb-3">
+      <span class="text-xs px-3 py-1 rounded-full bg-[#242421] border border-[#3a3a35] text-[#b5b5af]">
+        Team <strong class="text-indigo-400">comma</strong> · 김예인 · 토히르벡
+      </span>
+    </div>
 
-      <!-- 2. 과제 및 시험 일정 -->
-      <div class="card">
-        <h2>과제 및 시험 일정 <span class="badge">/assignments</span></h2>
-        <div class="form-group">
-          <div class="input-row">
-            <input type="text" id="assignSubject" placeholder="과목명" style="flex: 1;" />
-            <input type="text" id="assignTitle" placeholder="과제 내용" style="flex: 2;" />
-          </div>
-          <input type="date" id="assignDate" />
-          <button class="btn-add" onclick="addAssignment()">등록</button>
-        </div>
-        <ul id="assignList"></ul>
-      </div>
-
-      <!-- 3. 대외활동 & 동아리 -->
-      <div class="card">
-        <h2>대외활동 & 동아리 <span class="badge">/activities</span></h2>
-        <div class="form-group">
-          <div class="input-row">
-            <input type="text" id="actName" placeholder="활동/동아리명" style="flex: 1;" />
-            <input type="text" id="actRole" placeholder="역할" style="flex: 1;" />
-          </div>
-          <button class="btn-add" onclick="addActivity()">등록</button>
-        </div>
-        <ul id="actList"></ul>
-      </div>
-
-      <!-- 4. 자격증 & 어학 성적 -->
-      <div class="card">
-        <h2>자격증 관리 <span class="badge">/certificates</span></h2>
-        <div class="form-group">
-          <div class="input-row">
-            <input type="text" id="certTitle" placeholder="자격증명" style="flex: 2;" />
-            <input type="text" id="certScore" placeholder="점수/급수" style="flex: 1;" />
-          </div>
-          <input type="text" id="certIssuer" placeholder="발급기관" />
-          <button class="btn-add" onclick="addCertificate()">등록</button>
-        </div>
-        <ul id="certList"></ul>
+    <!-- 1. 상단 루트 노드 -->
+    <div class="flex justify-center">
+      <div class="root-node w-72 sm:w-96 py-3.5 px-5 text-center">
+        <div class="text-base sm:text-lg font-bold tracking-tight">🎓 대학생 학업·스펙 통합 관리 API</div>
+        <div class="text-xs text-[#a6a6a0] mt-0.5">라우터를 선택하여 데이터를 관리하세요</div>
       </div>
     </div>
-  </div>
+
+    <!-- 수직 연결선 -->
+    <div class="tree-stem-root"></div>
+
+    <!-- 2. 4개 하위 라우터 노드 (모바일에서는 2열, 태블릿/PC에서는 4열) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+      
+      <div class="tree-branch-item">
+        <div id="card-courses" onclick="selectRouter('courses')" class="router-card active py-3.5 px-2 text-center">
+          <div class="mono-font text-sm sm:text-base font-bold text-white">/courses</div>
+          <div class="text-xs text-[#c7c2f5] mt-1">수강 과목 관리</div>
+        </div>
+      </div>
+
+      <div class="tree-branch-item">
+        <div id="card-assignments" onclick="selectRouter('assignments')" class="router-card py-3.5 px-2 text-center">
+          <div class="mono-font text-sm sm:text-base font-bold text-white">/assignments</div>
+          <div class="text-xs text-[#c7c2f5] mt-1">과제·시험 일정</div>
+        </div>
+      </div>
+
+      <div class="tree-branch-item">
+        <div id="card-activities" onclick="selectRouter('activities')" class="router-card py-3.5 px-2 text-center">
+          <div class="mono-font text-sm sm:text-base font-bold text-white">/activities</div>
+          <div class="text-xs text-[#c7c2f5] mt-1">대외활동·동아리</div>
+        </div>
+      </div>
+
+      <div class="tree-branch-item">
+        <div id="card-certificates" onclick="selectRouter('certificates')" class="router-card py-3.5 px-2 text-center">
+          <div class="mono-font text-sm sm:text-base font-bold text-white">/certificates</div>
+          <div class="text-xs text-[#c7c2f5] mt-1">자격증 관리</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. 선택된 라우터의 실시간 데이터 관리 패널 -->
+    <section class="mt-7 bg-[#1e1e1c] border border-[#32322e] rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div class="flex items-center justify-between border-b border-[#2e2e2a] pb-3 mb-4">
+        <div>
+          <h2 id="panelTitle" class="text-base sm:text-lg font-bold text-white">수강 과목 관리</h2>
+          <p id="panelSubtitle" class="mono-font text-xs text-indigo-400 mt-0.5">Endpoint: /courses</p>
+        </div>
+        <span id="itemCount" class="text-xs bg-[#2a2a26] text-gray-300 px-2.5 py-1 rounded-md">0개 항목</span>
+      </div>
+
+      <!-- 동적 입력 폼 영역 -->
+      <div id="dynamicFormArea" class="mb-5"></div>
+
+      <!-- 실시간 데이터 목록 (DB/Memory 연동) -->
+      <div class="space-y-2" id="liveDataList">
+        <div class="text-center text-sm text-gray-500 py-4">데이터를 불러오는 중...</div>
+      </div>
+    </section>
+
+    <!-- 4. 하단 REST API 명세 테이블 (마인드맵 디자인 동일) -->
+    <section class="mt-6 bg-[#1a1a18] border border-[#2a2a27] rounded-2xl p-4 sm:p-6">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs sm:text-sm text-[#a6a6a0]">선택된 라우터 REST API 규격 · ★ = 핵심 테스트 API</span>
+      </div>
+      <div id="apiSpecContainer" class="divide-y divide-[#262624]"></div>
+    </section>
+
+  </main>
 
   <script>
     const API = '';
+    let currentRouter = 'courses';
 
-    async function loadAll() {
-      const resCourses = await fetch(`${API}/courses`);
-      const courses = await resCourses.json();
-      document.getElementById('courseList').innerHTML = courses.map(c => `
-        <li>
-          <div class="info"><strong>${c.title}</strong><span>(${c.professor} / ${c.credits}학점)</span></div>
-          <button class="btn-del" onclick="deleteItem('courses', ${c.id})">삭제</button>
-        </li>
+    const routerConfig = {
+      courses: {
+        path: '/courses',
+        title: '수강 과목 관리',
+        formHTML: `
+          <div class="flex flex-col gap-2.5">
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="courseTitle" class="dark-input col-span-2" placeholder="과목명 (예: 운영체제)" />
+              <input type="number" id="courseCredits" class="dark-input" placeholder="학점" value="3" />
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="courseProf" class="dark-input col-span-2" placeholder="교수명 (예: 김교수)" />
+              <button onclick="addCourse()" class="bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg transition py-2">
+                + 등록
+              </button>
+            </div>
+          </div>
+        `,
+        renderItem: (c) => `
+          <div class="flex items-center justify-between bg-[#141413] border border-[#2c2c29] rounded-xl px-4 py-3">
+            <div>
+              <span class="font-semibold text-white text-sm">${c.title}</span>
+              <span class="text-xs text-[#9e9e98] ml-2">${c.professor} · ${c.credits}학점</span>
+            </div>
+            <button onclick="deleteItem('courses', ${c.id})" class="text-xs bg-[#3d1418] hover:bg-[#521b20] text-[#f87171] px-2.5 py-1.5 rounded-lg transition">삭제</button>
+          </div>
+        `,
+        apis: [
+          { method: 'POST', endpoint: '/courses', desc: '★ 수강 과목 등록 (핵심 API)', isCore: true },
+          { method: 'GET', endpoint: '/courses', desc: '전체 수강 과목 목록 조회', isCore: false },
+          { method: 'GET', endpoint: '/courses/:id', desc: '단일 수강 과목 상세 조회', isCore: false },
+          { method: 'PUT', endpoint: '/courses/:id', desc: '수강 과목 정보 수정', isCore: false },
+          { method: 'DELETE', endpoint: '/courses/:id', desc: '수강 과목 삭제', isCore: false }
+        ]
+      },
+      assignments: {
+        path: '/assignments',
+        title: '과제 및 시험 일정',
+        formHTML: `
+          <div class="flex flex-col gap-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="assignSubject" class="dark-input" placeholder="과목명 (예: 웹프로그래밍)" />
+              <input type="date" id="assignDate" class="dark-input" />
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="assignTitle" class="dark-input col-span-2" placeholder="과제 내용 (예: 중간 프로젝트 제출)" />
+              <button onclick="addAssignment()" class="bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg transition py-2">
+                + 등록
+              </button>
+            </div>
+          </div>
+        `,
+        renderItem: (a) => `
+          <div class="flex items-center justify-between bg-[#141413] border border-[#2c2c29] rounded-xl px-4 py-3">
+            <div>
+              <span class="text-xs font-semibold text-indigo-400 mr-1.5">[${a.courseTitle}]</span>
+              <span class="font-medium text-white text-sm">${a.title}</span>
+              <span class="text-xs text-[#9e9e98] ml-2">~${a.dueDate}</span>
+            </div>
+            <button onclick="deleteItem('assignments', ${a.id})" class="text-xs bg-[#3d1418] hover:bg-[#521b20] text-[#f87171] px-2.5 py-1.5 rounded-lg transition">삭제</button>
+          </div>
+        `,
+        apis: [
+          { method: 'POST', endpoint: '/assignments', desc: '★ 과제 일정 등록 (핵심 API)', isCore: true },
+          { method: 'GET', endpoint: '/assignments', desc: '전체 과제 목록 조회', isCore: false },
+          { method: 'GET', endpoint: '/assignments/:id', desc: '단일 과제 상세 조회', isCore: false },
+          { method: 'PUT', endpoint: '/assignments/:id', desc: '과제 마감일 및 상태 수정', isCore: false },
+          { method: 'DELETE', endpoint: '/assignments/:id', desc: '과제 일정 삭제', isCore: false }
+        ]
+      },
+      activities: {
+        path: '/activities',
+        title: '대외활동 & 동아리',
+        formHTML: `
+          <div class="flex flex-col gap-2.5">
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="actName" class="dark-input" placeholder="활동/동아리명" />
+              <input type="text" id="actRole" class="dark-input" placeholder="역할 (예: 백엔드)" />
+              <button onclick="addActivity()" class="bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg transition py-2">
+                + 등록
+              </button>
+            </div>
+          </div>
+        `,
+        renderItem: (a) => `
+          <div class="flex items-center justify-between bg-[#141413] border border-[#2c2c29] rounded-xl px-4 py-3">
+            <div>
+              <span class="font-semibold text-white text-sm">${a.name}</span>
+              <span class="text-xs text-[#9e9e98] ml-2">(${a.role})</span>
+            </div>
+            <button onclick="deleteItem('activities', ${a.id})" class="text-xs bg-[#3d1418] hover:bg-[#521b20] text-[#f87171] px-2.5 py-1.5 rounded-lg transition">삭제</button>
+          </div>
+        `,
+        apis: [
+          { method: 'POST', endpoint: '/activities', desc: '★ 대외활동·동아리 등록 (핵심 API)', isCore: true },
+          { method: 'GET', endpoint: '/activities', desc: '전체 대외활동 목록 조회', isCore: false },
+          { method: 'GET', endpoint: '/activities/:id', desc: '단일 활동 상세 내역 조회', isCore: false },
+          { method: 'PUT', endpoint: '/activities/:id', desc: '활동 정보 수정', isCore: false },
+          { method: 'DELETE', endpoint: '/activities/:id', desc: '활동 내역 삭제', isCore: false }
+        ]
+      },
+      certificates: {
+        path: '/certificates',
+        title: '자격증 관리',
+        formHTML: `
+          <div class="flex flex-col gap-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="certTitle" class="dark-input" placeholder="자격증명 (예: SQLD)" />
+              <input type="text" id="certScore" class="dark-input" placeholder="등급/점수 (예: 합격)" />
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="certIssuer" class="dark-input col-span-2" placeholder="발급기관 (예: 한국데이터산업진흥원)" />
+              <button onclick="addCertificate()" class="bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg transition py-2">
+                + 등록
+              </button>
+            </div>
+          </div>
+        `,
+        renderItem: (c) => `
+          <div class="flex items-center justify-between bg-[#141413] border border-[#2c2c29] rounded-xl px-4 py-3">
+            <div>
+              <span class="font-semibold text-white text-sm">${c.title}: ${c.score}</span>
+              <span class="text-xs text-[#9e9e98] ml-2">(${c.issuer})</span>
+            </div>
+            <button onclick="deleteItem('certificates', ${c.id})" class="text-xs bg-[#3d1418] hover:bg-[#521b20] text-[#f87171] px-2.5 py-1.5 rounded-lg transition">삭제</button>
+          </div>
+        `,
+        apis: [
+          { method: 'POST', endpoint: '/certificates', desc: '★ 자격증 신규 등록 (핵심 API)', isCore: true },
+          { method: 'GET', endpoint: '/certificates', desc: '보유 자격증 전체 목록 조회', isCore: false },
+          { method: 'GET', endpoint: '/certificates/:id', desc: '단일 자격증 상세 조회', isCore: false },
+          { method: 'PUT', endpoint: '/certificates/:id', desc: '자격증 정보 수정', isCore: false },
+          { method: 'DELETE', endpoint: '/certificates/:id', desc: '자격증 내역 삭제', isCore: false }
+        ]
+      }
+    };
+
+    async function selectRouter(key) {
+      currentRouter = key;
+
+      // 상단 카드 활성화 표시
+      Object.keys(routerConfig).forEach(k => {
+        const el = document.getElementById(`card-${k}`);
+        if (k === key) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+
+      const cfg = routerConfig[key];
+      document.getElementById('panelTitle').textContent = cfg.title;
+      document.getElementById('panelSubtitle').textContent = `Endpoint: ${cfg.path}`;
+      document.getElementById('dynamicFormArea').innerHTML = cfg.formHTML;
+
+      // 하단 API 명세 렌더링
+      document.getElementById('apiSpecContainer').innerHTML = cfg.apis.map(api => `
+        <div class="py-2.5 flex items-center gap-3 sm:gap-6">
+          <span class="badge-method mono-font badge-${api.method} flex-shrink-0">${api.method}</span>
+          <span class="mono-font text-xs sm:text-sm font-medium text-[#f0f0ed] w-32 sm:w-48 flex-shrink-0">${api.endpoint}</span>
+          <span class="text-xs sm:text-sm ${api.isCore ? 'text-white font-medium' : 'text-[#a6a6a0]'}">${api.desc}</span>
+        </div>
       `).join('');
 
-      const resAssign = await fetch(`${API}/assignments`);
-      const assigns = await resAssign.json();
-      document.getElementById('assignList').innerHTML = assigns.map(a => `
-        <li>
-          <div class="info"><strong>[${a.courseTitle}]</strong> ${a.title}<span>(~${a.dueDate})</span></div>
-          <button class="btn-del" onclick="deleteItem('assignments', ${a.id})">삭제</button>
-        </li>
-      `).join('');
+      await fetchRouterData();
+    }
 
-      const resAct = await fetch(`${API}/activities`);
-      const acts = await resAct.json();
-      document.getElementById('actList').innerHTML = acts.map(a => `
-        <li>
-          <div class="info"><strong>${a.name}</strong><span>(${a.role})</span></div>
-          <button class="btn-del" onclick="deleteItem('activities', ${a.id})">삭제</button>
-        </li>
-      `).join('');
-
-      const resCert = await fetch(`${API}/certificates`);
-      const certs = await resCert.json();
-      document.getElementById('certList').innerHTML = certs.map(c => `
-        <li>
-          <div class="info"><strong>${c.title}</strong>: ${c.score}<span>(${c.issuer})</span></div>
-          <button class="btn-del" onclick="deleteItem('certificates', ${c.id})">삭제</button>
-        </li>
-      `).join('');
+    async function fetchRouterData() {
+      const cfg = routerConfig[currentRouter];
+      const listEl = document.getElementById('liveDataList');
+      try {
+        const res = await fetch(`${API}${cfg.path}`);
+        const items = await res.json();
+        document.getElementById('itemCount').textContent = `${items.length}개 항목`;
+        if (items.length === 0) {
+          listEl.innerHTML = `<div class="text-center text-xs text-gray-500 py-5">등록된 데이터가 없습니다. 위에서 추가해 보세요.</div>`;
+        } else {
+          listEl.innerHTML = items.map(item => cfg.renderItem(item)).join('');
+        }
+      } catch (err) {
+        listEl.innerHTML = `<div class="text-center text-xs text-red-400 py-4">서버 연결을 확인해 주세요.</div>`;
+      }
     }
 
     async function addCourse() {
@@ -148,18 +421,18 @@
       await fetch(`${API}/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, professor, credits, semester: '2026-1' })
+        body: JSON.stringify({ title, professor: professor || '미정', credits, semester: '2026-1' })
       });
       document.getElementById('courseTitle').value = '';
       document.getElementById('courseProf').value = '';
-      loadAll();
+      fetchRouterData();
     }
 
     async function addAssignment() {
       const courseTitle = document.getElementById('assignSubject').value.trim();
       const title = document.getElementById('assignTitle').value.trim();
       const dueDate = document.getElementById('assignDate').value;
-      if (!title || !courseTitle || !dueDate) return alert('모든 항목을 입력하세요.');
+      if (!courseTitle || !title || !dueDate) return alert('과목명, 과제 내용, 마감일을 모두 입력하세요.');
       await fetch(`${API}/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,13 +440,13 @@
       });
       document.getElementById('assignSubject').value = '';
       document.getElementById('assignTitle').value = '';
-      loadAll();
+      fetchRouterData();
     }
 
     async function addActivity() {
       const name = document.getElementById('actName').value.trim();
       const role = document.getElementById('actRole').value.trim();
-      if (!name || !role) return alert('모든 항목을 입력하세요.');
+      if (!name || !role) return alert('활동명과 역할을 입력하세요.');
       await fetch(`${API}/activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,32 +454,32 @@
       });
       document.getElementById('actName').value = '';
       document.getElementById('actRole').value = '';
-      loadAll();
+      fetchRouterData();
     }
 
     async function addCertificate() {
       const title = document.getElementById('certTitle').value.trim();
       const score = document.getElementById('certScore').value.trim();
       const issuer = document.getElementById('certIssuer').value.trim();
-      if (!title || !score) return alert('모든 항목을 입력하세요.');
+      if (!title || !score) return alert('자격증명과 등급/점수를 입력하세요.');
       await fetch(`${API}/certificates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, score, issuer })
+        body: JSON.stringify({ title, score, issuer: issuer || '공인기관' })
       });
       document.getElementById('certTitle').value = '';
       document.getElementById('certScore').value = '';
       document.getElementById('certIssuer').value = '';
-      loadAll();
+      fetchRouterData();
     }
 
     async function deleteItem(endpoint, id) {
       if (!confirm('정말 삭제하시겠습니까?')) return;
       await fetch(`${API}/${endpoint}/${id}`, { method: 'DELETE' });
-      loadAll();
+      fetchRouterData();
     }
 
-    loadAll();
+    window.onload = () => selectRouter('courses');
   </script>
 </body>
 </html>
