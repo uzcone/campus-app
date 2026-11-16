@@ -7,23 +7,55 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
+    /* 다크 모드 (기본값) */
     :root {
-      --bg-dark: #141413;
+      --bg-main: #141413;
+      --bg-surface: #1e1e1c;
+      --bg-item: #141413;
+      --bg-pill: #2c2c29;
+      --bg-pill-hover: #383834;
+      --text-primary: #f0f0ed;
+      --text-secondary: #a6a6a0;
+      --border-main: #333330;
+      --border-subtle: #262624;
       --node-root-bg: #3b3b37;
       --node-root-border: #6e6e68;
       --node-router-bg: #3b3486;
       --node-router-active: #473fa0;
       --node-router-border: #7e74eb;
       --line-color: #464642;
-      --row-border: #262624;
+      --input-bg: #141413;
+      --input-border: #383834;
+    }
+
+    /* 라이트 모드 (주간 모드) */
+    body.light-mode {
+      --bg-main: #f4f5f7;
+      --bg-surface: #ffffff;
+      --bg-item: #f9fafb;
+      --bg-pill: #e5e7eb;
+      --bg-pill-hover: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --border-main: #e5e7eb;
+      --border-subtle: #e5e7eb;
+      --node-root-bg: #ffffff;
+      --node-root-border: #cbd5e1;
+      --node-router-bg: #4f46e5;
+      --node-router-active: #4338ca;
+      --node-router-border: #6366f1;
+      --line-color: #cbd5e1;
+      --input-bg: #ffffff;
+      --input-border: #d1d5db;
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: #e5e5e2;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
       font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
       margin: 0;
       padding: 0;
+      transition: background-color 0.25s ease, color 0.25s ease;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -31,12 +63,31 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
+    .surface-box {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-main);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .item-card {
+      background-color: var(--bg-item);
+      border: 1px solid var(--border-main);
+    }
+
+    .pill-btn {
+      background-color: var(--bg-pill);
+      color: var(--text-secondary);
+    }
+    .pill-btn:hover {
+      background-color: var(--bg-pill-hover);
+    }
+
     .root-node {
       background-color: var(--node-root-bg);
-      border: 1px solid var(--node-root-border);
+      border: 1.5px solid var(--node-root-border);
       border-radius: 12px;
-      color: #f0f0ed;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      color: var(--text-primary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     }
 
     .router-card {
@@ -46,32 +97,31 @@
       transition: all 0.18s ease;
       cursor: pointer;
       user-select: none;
-      position: relative;
     }
 
     .router-card:hover {
       background-color: var(--node-router-active);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(126, 116, 235, 0.25);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);
     }
 
     .router-card.active {
       background-color: var(--node-router-active);
       border-color: #a8a0ff;
-      box-shadow: 0 0 0 2px rgba(168, 160, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
     /* 트리 연결선 */
     .tree-stem-root {
-      width: 1px;
-      height: 28px;
+      width: 1.5px;
+      height: 26px;
       background-color: var(--line-color);
       margin: 0 auto;
     }
 
     .tree-branch-item {
       position: relative;
-      padding-top: 28px;
+      padding-top: 26px;
     }
 
     .tree-branch-item::before {
@@ -80,8 +130,8 @@
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 1px;
-      height: 28px;
+      width: 1.5px;
+      height: 26px;
       background-color: var(--line-color);
     }
 
@@ -89,7 +139,7 @@
       content: "";
       position: absolute;
       top: 0;
-      height: 1px;
+      height: 1.5px;
       background-color: var(--line-color);
     }
 
@@ -116,54 +166,62 @@
     .badge-PUT { background-color: #3d260b; color: #fbbf24; }
     .badge-DELETE { background-color: #3d1418; color: #f87171; }
 
-    .api-row {
-      border-bottom: 1px solid var(--row-border);
-      transition: background-color 0.15s ease;
-    }
-    .api-row:hover { background-color: rgba(255, 255, 255, 0.02); }
+    body.light-mode .badge-GET { background-color: #dbeafe; color: #1d4ed8; }
+    body.light-mode .badge-POST { background-color: #dcfce7; color: #15803d; }
+    body.light-mode .badge-PUT { background-color: #fef3c7; color: #b45309; }
+    body.light-mode .badge-DELETE { background-color: #fee2e2; color: #b91c1c; }
 
-    .dark-input {
-      background-color: #141413;
-      border: 1px solid #383834;
-      color: #f0f0ed;
+    .api-row {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .theme-input {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
       border-radius: 8px;
       padding: 9px 12px;
       font-size: 13px;
       width: 100%;
     }
-    .dark-input:focus {
+    .theme-input:focus {
       outline: none;
-      border-color: #7e74eb;
+      border-color: #6366f1;
     }
   </style>
 </head>
 <body class="min-h-screen py-6 px-4 sm:px-8">
 
   <!-- 상단 통합 네비게이션 바 -->
-  <div class="max-w-4xl mx-auto mb-7 flex flex-wrap items-center justify-between gap-3 bg-[#1e1e1c] border border-[#333330] rounded-xl px-4 py-3 text-xs sm:text-sm">
+  <div class="surface-box max-w-4xl mx-auto mb-7 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3 text-xs sm:text-sm">
     <div class="flex items-center gap-2">
-      <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
-      <span class="font-semibold text-gray-200">Team comma</span>
-      <span class="text-gray-500 hidden sm:inline">| 김예인 · 토히르벡</span>
+      <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+      <span class="font-bold">Team comma</span>
+      <span style="color: var(--text-secondary);" class="hidden sm:inline">| 김예인 · 토히르벡</span>
     </div>
+
     <div class="flex flex-wrap items-center gap-2">
       <button id="tabDashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white transition">
-        🛠 실사용 대시보드 (CRUD)
+        🛠 실사용 대시보드
       </button>
-      <button id="tabMindmap" onclick="switchTab('mindmap')" class="px-3 py-1.5 rounded-lg font-medium bg-[#2c2c29] text-gray-300 hover:bg-[#383834] transition">
-        🌳 라우터 마인드맵 & API 명세
+      <button id="tabMindmap" onclick="switchTab('mindmap')" class="pill-btn px-3 py-1.5 rounded-lg font-medium transition">
+        🌳 라우터 마인드맵
       </button>
-      <button id="tabGuide" onclick="switchTab('guide')" class="px-3 py-1.5 rounded-lg font-medium bg-[#2c2c29] text-amber-300 hover:bg-[#383834] transition">
+      <button id="tabGuide" onclick="switchTab('guide')" class="pill-btn px-3 py-1.5 rounded-lg font-medium transition">
         📄 보고서 가이드
+      </button>
+      <!-- 주간/야간 모드 전환 버튼 -->
+      <button id="themeToggleBtn" onclick="toggleTheme()" class="pill-btn px-3 py-1.5 rounded-lg font-semibold transition border border-indigo-500/30" title="화면 테마 변경">
+        ☀️ 주간 모드
       </button>
     </div>
   </div>
 
-  <!-- 공통 상단 트리 다이어그램 (대시보드 & 마인드맵 탭에서 모두 사용) -->
+  <!-- 공통 상단 트리 다이어그램 -->
   <div id="sharedTreeHeader" class="max-w-4xl mx-auto">
     <div class="flex justify-center">
       <div class="root-node w-72 sm:w-80 py-3.5 px-6 text-center">
-        <span class="text-base sm:text-lg font-semibold tracking-tight">대학생 학업·스펙 관리 API</span>
+        <span class="text-base sm:text-lg font-bold tracking-tight">대학생 학업·스펙 관리 API</span>
       </div>
     </div>
 
@@ -173,44 +231,42 @@
       <div class="tree-branch-item">
         <div id="card-courses" onclick="selectRouter('courses')" class="router-card active py-3.5 px-2 sm:px-4 text-center">
           <div class="mono-font text-sm sm:text-lg font-bold text-white tracking-tight">/courses</div>
-          <div class="text-xs sm:text-sm text-[#c7c2f5] mt-1">수강 과목 · API 5개</div>
+          <div class="text-xs sm:text-sm text-indigo-100 mt-1">수강 과목 · API 5개</div>
         </div>
       </div>
 
       <div class="tree-branch-item">
         <div id="card-assignments" onclick="selectRouter('assignments')" class="router-card py-3.5 px-2 sm:px-4 text-center">
           <div class="mono-font text-sm sm:text-lg font-bold text-white tracking-tight">/assignments</div>
-          <div class="text-xs sm:text-sm text-[#c7c2f5] mt-1">과제 일정 · API 5개</div>
+          <div class="text-xs sm:text-sm text-indigo-100 mt-1">과제 일정 · API 5개</div>
         </div>
       </div>
 
       <div class="tree-branch-item">
         <div id="card-activities" onclick="selectRouter('activities')" class="router-card py-3.5 px-2 sm:px-4 text-center">
           <div class="mono-font text-sm sm:text-lg font-bold text-white tracking-tight">/activities</div>
-          <div class="text-xs sm:text-sm text-[#c7c2f5] mt-1">대외활동 · API 5개</div>
+          <div class="text-xs sm:text-sm text-indigo-100 mt-1">대외활동 · API 5개</div>
         </div>
       </div>
 
       <div class="tree-branch-item">
         <div id="card-certificates" onclick="selectRouter('certificates')" class="router-card py-3.5 px-2 sm:px-4 text-center">
           <div class="mono-font text-sm sm:text-lg font-bold text-white tracking-tight">/certificates</div>
-          <div class="text-xs sm:text-sm text-[#c7c2f5] mt-1">자격증 관리 · API 5개</div>
+          <div class="text-xs sm:text-sm text-indigo-100 mt-1">자격증 관리 · API 5개</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- [탭 1] 실사용 CRUD 대시보드 영역 (기존 프로젝트 핵심 기능 + 수정 기능 추가) -->
+  <!-- [탭 1] 실사용 CRUD 대시보드 -->
   <main id="dashboardSection" class="max-w-4xl mx-auto mt-7 pb-12">
-    <div class="bg-[#1e1e1c] border border-[#32322e] rounded-2xl p-5 sm:p-6 shadow-xl">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2e2e2a] pb-3.5 mb-5">
+    <div class="surface-box rounded-2xl p-5 sm:p-6 shadow-lg">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3.5 mb-5" style="border-bottom: 1px solid var(--border-main);">
         <div>
-          <h2 id="dashTitle" class="text-lg font-bold text-white">수강 과목 관리</h2>
-          <p id="dashSubtitle" class="mono-font text-xs text-indigo-400 mt-0.5">실시간 REST API 연동 (/courses)</p>
+          <h2 id="dashTitle" class="text-lg font-bold">수강 과목 관리</h2>
+          <p id="dashSubtitle" class="mono-font text-xs text-indigo-500 mt-0.5">실시간 REST API 연동 (/courses)</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span id="dashCount" class="text-xs bg-[#2a2a26] text-gray-300 px-3 py-1 rounded-md">0개 등록됨</span>
-        </div>
+        <span id="dashCount" class="pill-btn text-xs px-3 py-1 rounded-md font-medium">0개 등록됨</span>
       </div>
 
       <!-- 입력 및 수정 폼 -->
@@ -221,39 +277,39 @@
     </div>
   </main>
 
-  <!-- [탭 2] 라우터 마인드맵 & API 명세 뷰어 (보내주신 코드 구조 그대로 반영) -->
+  <!-- [탭 2] 라우터 마인드맵 & API 명세 -->
   <section id="mindmapSection" class="max-w-4xl mx-auto mt-7 pb-12 hidden">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-      <p class="text-sm text-[#a6a6a0]">
+      <p class="text-sm" style="color: var(--text-secondary);">
         라우터를 눌러 보세요 · ★ = 핵심 API (테스트 대상)
       </p>
       <div class="flex gap-2 text-xs">
         <button id="btnMapSingle" onclick="setMapMode('single')" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium">선택 라우터만 보기</button>
-        <button id="btnMapAll" onclick="setMapMode('all')" class="px-3 py-1.5 rounded-lg bg-[#2c2c29] text-gray-300 hover:bg-[#383834] font-medium">4개 라우터 전체 펼치기</button>
+        <button id="btnMapAll" onclick="setMapMode('all')" class="pill-btn px-3 py-1.5 rounded-lg font-medium">4개 라우터 전체 펼치기</button>
       </div>
     </div>
     <div id="apiSpecContainer" class="space-y-8"></div>
   </section>
 
-  <!-- [탭 3] 보고서 작성 가이드 섹션 -->
+  <!-- [탭 3] 보고서 작성 가이드 -->
   <section id="guideSection" class="max-w-4xl mx-auto mt-4 pb-16 hidden space-y-6">
-    <div class="bg-[#1e1e1c] border border-[#333330] rounded-2xl p-6 sm:p-8 space-y-6">
-      <div class="border-b border-[#333330] pb-4">
-        <h2 class="text-xl font-bold text-white">📋 프로젝트 보고서 작성 및 제출 가이드 (Team comma)</h2>
-        <p class="text-sm text-gray-400 mt-1">팀원: 김예인 (202301010), 토히르벡 (202404022) · 배포 URL: campus-app-xpwa.onrender.com</p>
+    <div class="surface-box rounded-2xl p-6 sm:p-8 space-y-6">
+      <div class="pb-4" style="border-bottom: 1px solid var(--border-main);">
+        <h2 class="text-xl font-bold">📋 프로젝트 보고서 작성 및 제출 가이드 (Team comma)</h2>
+        <p class="text-sm mt-1" style="color: var(--text-secondary);">팀원: 김예인 (202301010), 토히르벡 (202404022) · 배포 URL: campus-app-xpwa.onrender.com</p>
       </div>
 
       <div class="space-y-2">
-        <h3 class="text-base font-semibold text-indigo-400">1. 프로젝트 개요</h3>
-        <div class="bg-[#141413] border border-[#2c2c29] rounded-xl p-4 text-sm leading-relaxed text-gray-200 space-y-2">
-          <p><strong class="text-white">• 프로젝트명:</strong> 슬기로운 대학생활: 학사 일정 및 커리어 통합 관리 REST API 시스템</p>
-          <p><strong class="text-white">• 주요 구성:</strong> 독립된 4개의 RESTful 라우터(<code>/courses</code>, <code>/assignments</code>, <code>/activities</code>, <code>/certificates</code>)와 각 라우터별 5가지 CRUD 엔드포인트(총 20개 API) 및 실시간 웹 대시보드 구현</p>
+        <h3 class="text-base font-semibold text-indigo-500">1. 프로젝트 개요</h3>
+        <div class="item-card rounded-xl p-4 text-sm leading-relaxed space-y-2">
+          <p><strong>• 프로젝트명:</strong> 슬기로운 대학생활: 학사 일정 및 커리어 통합 관리 REST API 시스템</p>
+          <p><strong>• 주요 구성:</strong> 독립된 4개의 RESTful 라우터(<code>/courses</code>, <code>/assignments</code>, <code>/activities</code>, <code>/certificates</code>)와 각 라우터별 5가지 CRUD 엔드포인트(총 20개 API) 및 실시간 웹 대시보드 구현</p>
         </div>
       </div>
 
       <div class="space-y-2">
-        <h3 class="text-base font-semibold text-rose-400">2. 제출 전 감점 방지 체크리스트</h3>
-        <div class="bg-[#141413] border border-[#2c2c29] rounded-xl p-4 text-sm leading-relaxed text-gray-200">
+        <h3 class="text-base font-semibold text-rose-500">2. 제출 전 감점 방지 체크리스트</h3>
+        <div class="item-card rounded-xl p-4 text-sm leading-relaxed">
           <ul class="space-y-2.5">
             <li class="flex items-center gap-2.5">
               <input type="checkbox" checked class="w-4 h-4 accent-indigo-500 rounded" />
@@ -275,10 +331,20 @@
 
   <script>
     const API = '';
-    let activeTab = 'dashboard'; // 'dashboard' | 'mindmap' | 'guide'
+    let activeTab = 'dashboard';
     let currentRouter = 'courses';
-    let mapMode = 'single'; // 'single' | 'all'
+    let mapMode = 'single';
     let editingId = null;
+
+    /* 주간 / 야간 테마 전환 */
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.getElementById('themeToggleBtn');
+      body.classList.toggle('light-mode');
+      const isLight = body.classList.contains('light-mode');
+      btn.textContent = isLight ? '🌙 야간 모드' : '☀️ 주간 모드';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
 
     const routerData = {
       courses: {
@@ -333,13 +399,13 @@
 
       document.getElementById('tabDashboard').className = tab === 'dashboard'
         ? 'px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white transition'
-        : 'px-3 py-1.5 rounded-lg font-medium bg-[#2c2c29] text-gray-300 hover:bg-[#383834] transition';
+        : 'pill-btn px-3 py-1.5 rounded-lg font-medium transition';
       document.getElementById('tabMindmap').className = tab === 'mindmap'
         ? 'px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white transition'
-        : 'px-3 py-1.5 rounded-lg font-medium bg-[#2c2c29] text-gray-300 hover:bg-[#383834] transition';
+        : 'pill-btn px-3 py-1.5 rounded-lg font-medium transition';
       document.getElementById('tabGuide').className = tab === 'guide'
         ? 'px-3 py-1.5 rounded-lg font-medium bg-amber-500 text-black transition'
-        : 'px-3 py-1.5 rounded-lg font-medium bg-[#2c2c29] text-amber-300 hover:bg-[#383834] transition';
+        : 'pill-btn px-3 py-1.5 rounded-lg font-medium transition';
 
       document.getElementById('sharedTreeHeader').classList.toggle('hidden', tab === 'guide');
       document.getElementById('dashboardSection').classList.toggle('hidden', tab !== 'dashboard');
@@ -377,15 +443,14 @@
       mapMode = mode;
       document.getElementById('btnMapSingle').className = mode === 'single'
         ? 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium'
-        : 'px-3 py-1.5 rounded-lg bg-[#2c2c29] text-gray-300 hover:bg-[#383834] font-medium';
+        : 'pill-btn px-3 py-1.5 rounded-lg font-medium';
       document.getElementById('btnMapAll').className = mode === 'all'
         ? 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium'
-        : 'px-3 py-1.5 rounded-lg bg-[#2c2c29] text-gray-300 hover:bg-[#383834] font-medium';
+        : 'pill-btn px-3 py-1.5 rounded-lg font-medium';
       updateCardsHighlight();
       renderMindmap();
     }
 
-    /* ================= 마인드맵 API 명세 렌더링 ================= */
     function renderMindmap() {
       const container = document.getElementById('apiSpecContainer');
       const keys = mapMode === 'all' ? Object.keys(routerData) : [currentRouter];
@@ -395,21 +460,20 @@
         const rows = data.apis.map(api => `
           <div class="api-row py-3 flex items-center gap-3 sm:gap-7">
             <span class="badge-method mono-font badge-${api.method} flex-shrink-0">${api.method}</span>
-            <span class="mono-font text-xs sm:text-[15px] font-medium text-[#f0f0ed] w-36 sm:w-56 flex-shrink-0">${api.endpoint}</span>
-            <span class="text-xs sm:text-[14.5px] ${api.isCore ? 'text-[#e5e5e0] font-medium' : 'text-[#b5b5af]'} flex-1">${api.desc}</span>
+            <span class="mono-font text-xs sm:text-[15px] font-medium w-36 sm:w-56 flex-shrink-0">${api.endpoint}</span>
+            <span class="text-xs sm:text-[14.5px] flex-1" style="${api.isCore ? 'font-weight: 600;' : 'color: var(--text-secondary);'}">${api.desc}</span>
           </div>
         `).join('');
 
         return `
-          <div>
-            <h3 class="mono-font text-lg font-bold text-white mb-2">${data.path} <span class="text-xs font-normal text-gray-400 ml-2">${data.title}</span></h3>
-            <div class="border-t border-[#262624]">${rows}</div>
+          <div class="surface-box rounded-2xl p-5">
+            <h3 class="mono-font text-lg font-bold mb-2">${data.path} <span class="text-xs font-normal ml-2" style="color: var(--text-secondary);">${data.title}</span></h3>
+            <div style="border-top: 1px solid var(--border-subtle);">${rows}</div>
           </div>
         `;
       }).join('');
     }
 
-    /* ================= 실사용 CRUD 대시보드 렌더링 ================= */
     async function renderDashboard() {
       const cfg = routerData[currentRouter];
       document.getElementById('dashTitle').textContent = cfg.title;
@@ -419,10 +483,10 @@
       if (currentRouter === 'courses') {
         formArea.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-            <input type="text" id="f1" class="dark-input sm:col-span-5" placeholder="과목명 (예: 운영체제)" />
-            <input type="text" id="f2" class="dark-input sm:col-span-3" placeholder="교수명 (예: 김교수)" />
-            <input type="number" id="f3" class="dark-input sm:col-span-2" placeholder="학점" value="3" />
-            <button onclick="submitForm()" class="sm:col-span-2 bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg py-2.5 transition">
+            <input type="text" id="f1" class="theme-input sm:col-span-5" placeholder="과목명 (예: 운영체제)" />
+            <input type="text" id="f2" class="theme-input sm:col-span-3" placeholder="교수명 (예: 김교수)" />
+            <input type="number" id="f3" class="theme-input sm:col-span-2" placeholder="학점" value="3" />
+            <button onclick="submitForm()" class="sm:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg py-2.5 transition">
               ${editingId ? '수정 완료' : '+ 등록'}
             </button>
           </div>
@@ -430,10 +494,10 @@
       } else if (currentRouter === 'assignments') {
         formArea.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-            <input type="text" id="f1" class="dark-input sm:col-span-3" placeholder="과목명" />
-            <input type="text" id="f2" class="dark-input sm:col-span-4" placeholder="과제 내용" />
-            <input type="date" id="f3" class="dark-input sm:col-span-3" />
-            <button onclick="submitForm()" class="sm:col-span-2 bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg py-2.5 transition">
+            <input type="text" id="f1" class="theme-input sm:col-span-3" placeholder="과목명" />
+            <input type="text" id="f2" class="theme-input sm:col-span-4" placeholder="과제 내용" />
+            <input type="date" id="f3" class="theme-input sm:col-span-3" />
+            <button onclick="submitForm()" class="sm:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg py-2.5 transition">
               ${editingId ? '수정 완료' : '+ 등록'}
             </button>
           </div>
@@ -441,9 +505,9 @@
       } else if (currentRouter === 'activities') {
         formArea.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-            <input type="text" id="f1" class="dark-input sm:col-span-5" placeholder="활동/동아리명" />
-            <input type="text" id="f2" class="dark-input sm:col-span-5" placeholder="역할 (예: 백엔드 개발자)" />
-            <button onclick="submitForm()" class="sm:col-span-2 bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg py-2.5 transition">
+            <input type="text" id="f1" class="theme-input sm:col-span-5" placeholder="활동/동아리명" />
+            <input type="text" id="f2" class="theme-input sm:col-span-5" placeholder="역할 (예: 백엔드 개발자)" />
+            <button onclick="submitForm()" class="sm:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg py-2.5 transition">
               ${editingId ? '수정 완료' : '+ 등록'}
             </button>
           </div>
@@ -451,10 +515,10 @@
       } else if (currentRouter === 'certificates') {
         formArea.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-            <input type="text" id="f1" class="dark-input sm:col-span-4" placeholder="자격증명 (예: SQLD)" />
-            <input type="text" id="f2" class="dark-input sm:col-span-3" placeholder="등급/점수 (예: 합격)" />
-            <input type="text" id="f3" class="dark-input sm:col-span-3" placeholder="발급기관" />
-            <button onclick="submitForm()" class="sm:col-span-2 bg-[#473fa0] hover:bg-[#564dbd] text-white font-semibold text-sm rounded-lg py-2.5 transition">
+            <input type="text" id="f1" class="theme-input sm:col-span-4" placeholder="자격증명 (예: SQLD)" />
+            <input type="text" id="f2" class="theme-input sm:col-span-3" placeholder="등급/점수 (예: 합격)" />
+            <input type="text" id="f3" class="theme-input sm:col-span-3" placeholder="발급기관" />
+            <button onclick="submitForm()" class="sm:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg py-2.5 transition">
               ${editingId ? '수정 완료' : '+ 등록'}
             </button>
           </div>
@@ -473,34 +537,34 @@
         document.getElementById('dashCount').textContent = `${items.length}개 등록됨`;
 
         if (items.length === 0) {
-          listArea.innerHTML = `<div class="text-center text-sm text-gray-500 py-6">등록된 항목이 없습니다.</div>`;
+          listArea.innerHTML = `<div class="text-center text-sm py-6" style="color: var(--text-secondary);">등록된 항목이 없습니다.</div>`;
           return;
         }
 
         listArea.innerHTML = items.map(item => {
           let label = '';
           if (currentRouter === 'courses') {
-            label = `<strong class="text-white">${item.title}</strong> <span class="text-xs text-gray-400 ml-2">${item.professor} · ${item.credits}학점</span>`;
+            label = `<strong>${item.title}</strong> <span class="text-xs ml-2" style="color: var(--text-secondary);">${item.professor} · ${item.credits}학점</span>`;
           } else if (currentRouter === 'assignments') {
-            label = `<span class="text-xs text-indigo-400 font-semibold mr-1.5">[${item.courseTitle}]</span><strong class="text-white">${item.title}</strong> <span class="text-xs text-gray-400 ml-2">~${item.dueDate}</span>`;
+            label = `<span class="text-xs text-indigo-500 font-semibold mr-1.5">[${item.courseTitle}]</span><strong>${item.title}</strong> <span class="text-xs ml-2" style="color: var(--text-secondary);">~${item.dueDate}</span>`;
           } else if (currentRouter === 'activities') {
-            label = `<strong class="text-white">${item.name}</strong> <span class="text-xs text-gray-400 ml-2">(${item.role})</span>`;
+            label = `<strong>${item.name}</strong> <span class="text-xs ml-2" style="color: var(--text-secondary);">(${item.role})</span>`;
           } else if (currentRouter === 'certificates') {
-            label = `<strong class="text-white">${item.title}: ${item.score}</strong> <span class="text-xs text-gray-400 ml-2">(${item.issuer})</span>`;
+            label = `<strong>${item.title}: ${item.score}</strong> <span class="text-xs ml-2" style="color: var(--text-secondary);">(${item.issuer})</span>`;
           }
 
           return `
-            <div class="flex items-center justify-between bg-[#141413] border border-[#2c2c29] rounded-xl px-4 py-3">
+            <div class="item-card flex items-center justify-between rounded-xl px-4 py-3">
               <div class="text-sm">${label}</div>
               <div class="flex items-center gap-2 flex-shrink-0">
-                <button onclick='startEdit(${JSON.stringify(item)})' class="text-xs bg-[#3d260b] hover:bg-[#543510] text-[#fbbf24] px-2.5 py-1.5 rounded-lg transition">수정</button>
-                <button onclick="deleteItem(${item.id})" class="text-xs bg-[#3d1418] hover:bg-[#521b20] text-[#f87171] px-2.5 py-1.5 rounded-lg transition">삭제</button>
+                <button onclick='startEdit(${JSON.stringify(item)})' class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 font-medium px-2.5 py-1.5 rounded-lg transition">수정</button>
+                <button onclick="deleteItem(${item.id})" class="text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-500 font-medium px-2.5 py-1.5 rounded-lg transition">삭제</button>
               </div>
             </div>
           `;
         }).join('');
       } catch (e) {
-        listArea.innerHTML = `<div class="text-center text-xs text-red-400 py-4">API 서버와 연결할 수 없습니다.</div>`;
+        listArea.innerHTML = `<div class="text-center text-xs text-rose-500 py-4">API 서버와 연결할 수 없습니다.</div>`;
       }
     }
 
@@ -575,7 +639,13 @@
       loadItems();
     }
 
-    window.onload = () => switchTab('dashboard');
+    window.onload = () => {
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('themeToggleBtn').textContent = '🌙 야간 모드';
+      }
+      switchTab('dashboard');
+    };
   </script>
 </body>
 </html>
