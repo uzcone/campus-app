@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAMPASS - 대학생 학업·스펙 통합 관리</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    body { margin: 0; background: #f4f6f9; color: #1e293b; }
+    header { background: #1e3a8a; color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 22px; letter-spacing: 0.5px; }
+    header span { font-size: 13px; opacity: 0.85; }
+    .container { max-width: 960px; margin: 28px auto; padding: 0 20px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab { padding: 10px 18px; border: none; border-radius: 8px; background: #e2e8f0; color: #475569; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.15s; }
+    .tab.active { background: #2563eb; color: white; }
+    .card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    .card h2 { margin: 0 0 16px; font-size: 17px; color: #0f172a; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .form-row input { flex: 1; min-width: 140px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+    .btn-primary { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: #1d4ed8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background: #f8fafc; color: #475569; font-weight: 600; }
+    .btn-sm { padding: 5px 10px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-right: 4px; }
+    .btn-toggle { background: #dbeafe; color: #1d4ed8; }
+    .btn-del { background: #fee2e2; color: #dc2626; }
+    .badge-done { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-todo { background: #fef3c7; color: #b45309; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CAMPASS</h1>
+    <span>대학생 학업 · 스펙 통합 관리 서비스</span>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('courses')">📚 수강 과목</button>
+      <button class="tab" onclick="switchTab('assignments')">📝 과제 관리</button>
+      <button class="tab" onclick="switchTab('activities')">🏃 대외활동</button>
+      <button class="tab" onclick="switchTab('certificates')">🏆 자격증·어학</button>
+    </div>
+
+    <div class="card">
+      <h2 id="form-title">새 수강 과목 등록</h2>
+      <form id="create-form" class="form-row" onsubmit="handleCreate(event)"></form>
+    </div>
+
+    <div class="card">
+      <h2 id="list-title">수강 과목 목록</h2>
+      <table>
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'courses';
+
+    const config = {
+      courses: {
+        formTitle: '새 수강 과목 등록',
+        listTitle: '수강 과목 목록',
+        fields: [
+          { name: 'title', placeholder: '과목명 (예: AI웹개발2)', required: true },
+          { name: 'professor', placeholder: '교수명 (예: 김교수)' },
+          { name: 'room', placeholder: '강의실 (예: 공학관 301호)' },
+          { name: 'credits', placeholder: '학점 (예: 3)', type: 'number' },
+          { name: 'semester', placeholder: '학기 (예: 2026-2)' }
+        ],
+        headers: ['ID', '과목명', '교수명', '강의실', '학점', '학기', '관리'],
+        renderRow: (item) => `
+          <td>${item.id}</td>
+          <td><strong>${item.title}</strong></td>
+          <td>${item.professor}</td>
+          <td>${item.room}</td>
+          <td>${item.credits}학점</td>
+          <td>${item.semester}</td>
+          <td><button class="btn-sm btn-del" onclick="deleteItem(${item.id})">삭제</button></td>
+        `
+      },
+      assignments: {
+        formTitle: '새 과제 등록',
+        listTitle: '과제 목록',
+        fields: [
+          { name: 'courseTitle', placeholder: '과목명 (예: AI웹개발2)', required: true },
+          { name: 'title', placeholder: '과제명 (예: REST API 구현)', required: true },
+          { name: 'dueDate', placeholder: '마감일', type: 'date', required: true }
+        ],
+        headers: ['ID', '과목명', '과제명', '마감일', '상태', '관리'],
+        renderRow: (item) => `
+          <td>${item.id}</td>
+          <td>${item.courseTitle}</td>
+          <td><strong>${item.title}</strong></td>
+          <td>${item.dueDate}</td>
+          <td>${item.isCompleted ? '<span class="badge-done">완료</span>' : '<span class="badge-todo">진행중</span>'}</td>
+          <td>
+            <button class="btn-sm btn-toggle" onclick="toggleAssignment(${item.id}, ${!item.isCompleted})">상태변경</button>
+            <button class="btn-sm btn-del" onclick="deleteItem(${item.id})">삭제</button>
+          </td>
+        `
+      },
+      activities: {
+        formTitle: '새 대외활동 등록',
+        listTitle: '대외활동 및 동아리 목록',
+        fields: [
+          { name: 'name', placeholder: '활동명 (예: 멋쟁이사자처럼)', required: true },
+          { name: 'role', placeholder: '역할 (예: 백엔드 개발자)', required: true },
+          { name: 'period', placeholder: '기간 (예: 2026.03 ~ 2026.11)' },
+          { name: 'description', placeholder: '활동 내용 요약' }
+        ],
+        headers: ['ID', '활동명', '역할', '기간', '설명', '관리'],
+        renderRow: (item) => `
+          <td>${item.id}</td>
+          <td><strong>${item.name}</strong></td>
+          <td>${item.role}</td>
+          <td>${item.period}</td>
+          <td>${item.description || '-'}</td>
+          <td><button class="btn-sm btn-del" onclick="deleteItem(${item.id})">삭제</button></td>
+        `
+      },
+      certificates: {
+        formTitle: '새 자격증·어학 등록',
+        listTitle: '보유 자격증 및 어학 성적',
+        fields: [
+          { name: 'title', placeholder: '자격증/시험명 (예: 정보처리기사)', required: true },
+          { name: 'issuer', placeholder: '발급기관 (예: 한국산업인력공단)', required: true },
+          { name: 'score', placeholder: '등급/점수 (예: 합격 / 900점)', required: true },
+          { name: 'issueDate', placeholder: '취득일', type: 'date', required: true }
+        ],
+        headers: ['ID', '자격증명', '발급기관', '점수/등급', '취득일', '관리'],
+        renderRow: (item) => `
+          <td>${item.id}</td>
+          <td><strong>${item.title}</strong></td>
+          <td>${item.issuer}</td>
+          <td>${item.score}</td>
+          <td>${item.issueDate}</td>
+          <td><button class="btn-sm btn-del" onclick="deleteItem(${item.id})">삭제</button></td>
+        `
+      }
+    };
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach((btn, idx) => {
+        const keys = ['courses', 'assignments', 'activities', 'certificates'];
+        btn.classList.toggle('active', keys[idx] === tab);
+      });
+      renderUI();
+      loadData();
+    }
+
+    function renderUI() {
+      const cfg = config[currentTab];
+      document.getElementById('form-title').innerText = cfg.formTitle;
+      document.getElementById('list-title').innerText = cfg.listTitle;
+
+      const form = document.getElementById('create-form');
+      form.innerHTML = cfg.fields.map(f =>
+        `<input name="${f.name}" type="${f.type || 'text'}" placeholder="${f.placeholder}" ${f.required ? 'required' : ''} />`
+      ).join('') + `<button type="submit" class="btn-primary">+ 등록</button>`;
+
+      document.getElementById('table-head').innerHTML =
+        `<tr>${cfg.headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+    }
+
+    async function loadData() {
+      const res = await fetch(`/${currentTab}`);
+      const data = await res.json();
+      const tbody = document.getElementById('table-body');
+      if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="${config[currentTab].headers.length}" style="text-align:center;color:#94a3b8;padding:24px;">등록된 데이터가 없습니다. 위 입력창에서 새로 등록해 보세요!</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.map(item => `<tr>${config[currentTab].renderRow(item)}</tr>`).join('');
+    }
+
+    async function handleCreate(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const body = Object.fromEntries(formData.entries());
+      await fetch(`/${currentTab}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      e.target.reset();
+      loadData();
+    }
+
+    async function toggleAssignment(id, nextState) {
+      await fetch(`/assignments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: nextState })
+      });
+      loadData();
+    }
+
+    async function deleteItem(id) {
+      await fetch(`/${currentTab}/${id}`, { method: 'DELETE' });
+      loadData();
+    }
+
+    renderUI();
+    loadData();
+  </script>
+</body>
+</html>
